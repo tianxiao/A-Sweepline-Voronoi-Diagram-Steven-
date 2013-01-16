@@ -19,11 +19,11 @@ txVoronoiBuilder::~txVoronoiBuilder(void)
 void txVoronoiBuilder::Build(){
 	InitialEventQueue();
 	while (!eventQueue.empty()){
-		txPriorityNode currentEvent = *eventQueue.begin();
+		txPriorityNode *currentEvent = *(eventQueue.begin());
 		eventQueue.pop_front();
-		if (SITE_EVENT==currentEvent.eventType)
+		if (SITE_EVENT==currentEvent->eventType)
 		{
-			HandleSiteEvent(currentEvent);
+			HandleSiteEvent(*currentEvent);
 		} else {
 			
 		}
@@ -35,9 +35,10 @@ void txVoronoiBuilder::Build(){
 void txVoronoiBuilder::InitialEventQueue(){
 	for (size_t i=0; i<sitesList.size(); i++){
 		//eventQueue.push(txPriorityNode(&sitesList[i],SITE_EVENT));
-		eventQueue.push_back(txPriorityNode(&sitesList[i],SITE_EVENT));
+		eventPool.push_back(txPriorityNode(&sitesList[i],SITE_EVENT));
 	}
 
+	UpdatePriorityQueue();
 	// debug Priority queue
 	//while (!eventQueue.empty()){
 	//	eventQueue.top().PrintNode();
@@ -79,4 +80,18 @@ void txVoronoiBuilder::DeleteFalseAlarmCircleEvent(txPriorityNode *circleEvent){
 	//	if ( eventQueue[i]
 	//}
 	//eventQueue.
+}
+
+void txVoronoiBuilder::UpdatePriorityQueue(){
+	std::vector<txPriorityNode*> nodelist;
+	nodelist.reserve(eventPool.size());
+	for (std::list<txPriorityNode>::iterator it=eventPool.begin(); it!=eventPool.end(); it++) {
+		nodelist.push_back(&(*it));
+	}
+
+	std::sort(nodelist.begin(), nodelist.end(), txPriorityNodeCmp());
+	eventQueue.clear();
+	for (size_t i=0; i<nodelist.size(); i++) {
+		eventQueue.push_back(nodelist[i]);
+	}
 }

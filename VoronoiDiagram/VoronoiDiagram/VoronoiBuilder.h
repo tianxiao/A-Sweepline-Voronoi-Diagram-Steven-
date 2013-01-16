@@ -41,9 +41,9 @@ typedef struct txPriorityNode{
 struct txPriorityNodeCmp{
 	bool operator()( txPriorityNode *l,  txPriorityNode *r) const {
 		if (l->pV->y > r->pV->y){
-			return false;
-		} else {
 			return true;
+		} else {
+			return false;
 		}
 	}
 };
@@ -67,12 +67,15 @@ private:
 	void HandleSiteEvent(const txPriorityNode &siteEvent);
 	void HandleCircleEvent(const txPriorityNode &cirlceEvent);
 	void DeleteFalseAlarmCircleEvent(txPriorityNode *circleEvent);
+	void UpdatePriorityQueue();
+	void InsertEvent(txPriorityNode *circleEvent);
 
 private:
 	txMesh *mesh;
 	std::vector<txVertex>     sitesList;
 	//std::priority_queue<txPriorityNode, std::vector<txPriorityNode>, txPriorityNodeCmp> eventQueue;
-	std::list<txPriorityNode> eventQueue;
+	std::list<txPriorityNode> eventPool;
+	std::list<txPriorityNode*> eventQueue;
 	std::list<txEdge> edgeList;
 	std::map<int, txArc>     beachLine;
 	typedef std::map<int, txArc>::iterator BeachIt;
