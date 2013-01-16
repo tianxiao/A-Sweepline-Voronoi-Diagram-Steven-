@@ -27,6 +27,7 @@ typedef struct txEdge{
 	txVertex   *pRSite;
 	txVertex   *pS;
 	txVertex   *pE;    // This edge is the bisector of pLSite & pRSite
+	double a,b,c;
 } txEdge;
 
 #endif // __HALFEDGEPRIMITIVE_HEADERFILE__

@@ -67,17 +67,19 @@ private:
 	void HandleSiteEvent(const txPriorityNode &siteEvent);
 	void HandleCircleEvent(const txPriorityNode &cirlceEvent);
 	void DeleteFalseAlarmCircleEvent(txPriorityNode *circleEvent);
-	void UpdatePriorityQueue();
-	void InsertEvent(txPriorityNode *circleEvent);
+	void InsertEvent(const txPriorityNode &pevent);
+	static void Bisector(const txVertex &v0, const txVertex &v1, txEdge &edge);
+	static void Circle(const txVertex &n0, const txVertex &n1, const txVertex &n2, double &y);
+	
 
 private:
 	txMesh *mesh;
 	std::vector<txVertex>     sitesList;
 	//std::priority_queue<txPriorityNode, std::vector<txPriorityNode>, txPriorityNodeCmp> eventQueue;
-	std::list<txPriorityNode> eventPool;
-	std::list<txPriorityNode*> eventQueue;
+	std::list<txPriorityNode> eventQueue;
 	std::list<txEdge> edgeList;
 	std::map<int, txArc>     beachLine;
 	typedef std::map<int, txArc>::iterator BeachIt;
+	typedef std::list<txPriorityNode>::iterator PQIt;
 };
 

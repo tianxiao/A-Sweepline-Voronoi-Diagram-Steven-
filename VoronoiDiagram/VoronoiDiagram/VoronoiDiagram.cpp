@@ -9,7 +9,7 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	const int numOfSites = 3;
 	txVoronoiBuilder builder(numOfSites);
-	txVertex vList[numOfSites] = { {0,0},{0,4},{1,1} };
+	txVertex vList[numOfSites] = { {1,0},{0,4},{2,1} };
 	for (int i=0; i<numOfSites; i++) {
 		builder.AddSites(vList[i]);
 	}
