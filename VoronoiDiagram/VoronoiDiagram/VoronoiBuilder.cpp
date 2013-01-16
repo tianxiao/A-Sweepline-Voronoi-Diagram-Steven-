@@ -97,6 +97,8 @@ void txVoronoiBuilder::HandleSiteEvent(const txPriorityNode &siteEvent){
 		double y;
 		Circle(*lmArc->pV,*siteEvent.pV,*rmArc->pV,y);
 	}
+
+
 }
 
 void txVoronoiBuilder::HandleCircleEvent(const txPriorityNode &cirlceEvent){

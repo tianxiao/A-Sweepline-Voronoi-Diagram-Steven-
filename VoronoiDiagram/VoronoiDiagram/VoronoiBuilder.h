@@ -70,7 +70,7 @@ private:
 	void InsertEvent(const txPriorityNode &pevent);
 	static void Bisector(const txVertex &v0, const txVertex &v1, txEdge &edge);
 	static void Circle(const txVertex &n0, const txVertex &n1, const txVertex &n2, double &y);
-	
+	//bool GetTripleAsLeft();
 
 private:
 	txMesh *mesh;
