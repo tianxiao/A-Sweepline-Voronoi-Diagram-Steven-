@@ -6,33 +6,37 @@
 #include <map>
 #include "halfedgeprimitive.h"
 
+#define PRECISION_INFINIT -1e20
+
 class txMesh;
 struct txPriorityNode;
-
-
 
 typedef enum txVoronoiEventType{
 	SITE_EVENT,
 	CIRCLE_EVENT,
-	FALSE_ALARM
 } txVoronoiEventType;
 
 typedef struct txArc{
 	int             id;
 	txVertex        *pV;
-	txPriorityNode  *circleEvent;
-	txArc(txVertex *pV_, txPriorityNode *circleEvent_):pV(pV_),circleEvent(circleEvent_){};
+	//txPriorityNode  *circleEvent;
+	int             PQId;
+	txArc(txVertex *pV_):pV(pV_),PQId(-1){};
 } txArc;
 
 typedef struct txPriorityNode{
+	int                  id;
 	txVertex             *pV;  // point to the site
 	txVoronoiEventType   eventType;
-	txArc                *al;
-	txArc                *am;
-	txArc                *ar;
+	//txArc                *al;
+	//txArc                *am;
+	//txArc                *ar;
+	double               circleBottomY;
 	txPriorityNode(txVertex *pV_, txVoronoiEventType eventType_)
 		:pV(pV_)
-		,eventType(eventType_){}
+		,eventType(eventType_)
+		,circleBottomY(PRECISION_INFINIT)
+	{}
 
 	void PrintNode(){
 		printf("%d--%d\n",pV->x,pV->y);
@@ -74,11 +78,13 @@ private:
 	void InitialEventQueue();
 	void HandleSiteEvent(const txPriorityNode &siteEvent);
 	void HandleCircleEvent(const txPriorityNode &cirlceEvent);
-	void DeleteFalseAlarmCircleEvent(txPriorityNode *circleEvent);
+	void DeleteFalseAlarmCircleEvent(int circleId);
 	void InsertEvent(const txPriorityNode &pevent);
 	static void Bisector(const txVertex &v0, const txVertex &v1, txEdge &edge);
 	static void Circle(const txVertex &n0, const txVertex &n1, const txVertex &n2, double &y);
-	//bool GetTripleAsLeft();
+	bool GetTripleAsLeft(BLIt middle, BLIt &l, BLIt &ll);
+	bool GetTripleAsMiddle(BLIt middle, BLIt &l, BLIt &r);
+	bool GetTripleAsRight(BLIt middle, BLIt &r, BLIt &rr);
 	void InserteArc(const txArc &arc);
 	BLIt GetArcIterator(const txArc &arc);
 
@@ -90,6 +96,6 @@ private:
 	std::list<txEdge>                    edgeList;
 	std::list<txArc>                     beachLine;
 	int                                  arcCount;
-
+	int                                  eventCount;
 };
 
