@@ -12,6 +12,7 @@
 txVoronoiBuilder::txVoronoiBuilder(int numOfSites)
 {
 	mesh = new txMesh(numOfSites);
+	arcCount = 0;
 }
 
 
@@ -45,60 +46,19 @@ void txVoronoiBuilder::InitialEventQueue(){
 
 void txVoronoiBuilder::HandleSiteEvent(const txPriorityNode &siteEvent){
 	int siteX = siteEvent.pV->x;
-	beachLine.insert(std::pair<int, txArc>(siteX,txArc(siteEvent.pV,NULL) ));
+	txArc newArc(siteEvent.pV, NULL);
+	newArc.id = arcCount++;
+	// InsertArc will rtn a newArc's iterator
+	InserteArc(newArc);
+	BLIt upperBIt = GetArcIterator(newArc);
+	upperBIt++; // upper upper x >= self x
 	if ( beachLine.size() ==1 ) return;
 	// check corresponding circle event see if it is false alarm
-	txArc *currentAboveArc = NULL;
-	BeachIt upperBIt = beachLine.upper_bound(siteX);
 	if ( upperBIt != beachLine.end() ) {
-		currentAboveArc = &(upperBIt->second);
-		if ( currentAboveArc->circleEvent ) {
-			DeleteFalseAlarmCircleEvent(currentAboveArc->circleEvent);
+		if ( upperBIt->circleEvent ) {
+			DeleteFalseAlarmCircleEvent(upperBIt->circleEvent);
 		}
 	}
-
-	// Handle ll
-	txArc *lArc = NULL;
-	txArc *llArc = NULL;
-	if ( beachLine.lower_bound(siteX) != beachLine.end() ) {
-		lArc = &(beachLine.lower_bound(siteX)->second);
-		if ( beachLine.lower_bound(lArc->pV->x) != beachLine.end() ){
-			llArc = &(beachLine.lower_bound(lArc->pV->x)->second);
-		}
-	}
-	if (lArc!=NULL && llArc!=NULL && lArc!=llArc) {
-		
-	}
-
-	// Handle rr
-	txArc *rArc = NULL;
-	txArc *rrArc = NULL;
-	if ( beachLine.upper_bound(siteX) != beachLine.end() ) {
-		rArc = &(beachLine.upper_bound(siteX)->second);
-		if ( beachLine.upper_bound(rArc->pV->x) != beachLine.end() ){
-			rrArc = &(beachLine.upper_bound(rArc->pV->x)->second);
-		}
-	}
-	if (rArc!=NULL && rrArc!=NULL && rArc!=rrArc) {
-	
-	}
-
-	// Handle middle
-	txArc *lmArc = NULL;
-	txArc *rmArc = NULL;
-	if ( beachLine.lower_bound(siteX) != beachLine.end() ) {
-		lmArc = &(beachLine.lower_bound(siteX)->second);
-		if (beachLine.upper_bound(siteX) != beachLine.end() ) {
-			rmArc = &(beachLine.upper_bound(siteX)->second);
-		}
-	}
-	if (lmArc!=NULL && rmArc!=NULL && lmArc!=rmArc) {
-		printf("Check Circle...\n");
-		double y;
-		Circle(*lmArc->pV,*siteEvent.pV,*rmArc->pV,y);
-	}
-
-
 }
 
 void txVoronoiBuilder::HandleCircleEvent(const txPriorityNode &cirlceEvent){
@@ -152,3 +112,26 @@ void txVoronoiBuilder::Circle(const txVertex &n0, const txVertex &n1, const txVe
 	y = centerY - radius;
 }
 
+
+// Insert the arc as the x coordinate increase!
+void txVoronoiBuilder::InserteArc(const txArc &arc){
+	BLIt rtn;
+	for ( rtn=beachLine.begin(); rtn!=beachLine.end(); rtn++ ) {
+		if ( arc.pV->x < rtn->pV->x ) {
+			break;
+		}
+	} 
+	BLList tempList;
+	tempList.push_back(arc);
+
+	beachLine.insert(rtn, tempList.begin(), tempList.end());
+	// check if rtn validate after the list have been updated
+	// OK rtn is invalidate!
+}
+
+BLIt txVoronoiBuilder::GetArcIterator(const txArc &arc){
+	for ( BLIt it = beachLine.begin(); it!=beachLine.end(); it++ ) {
+		if ( arc.id == it->id ) return it;
+	}
+	return beachLine.end();
+}

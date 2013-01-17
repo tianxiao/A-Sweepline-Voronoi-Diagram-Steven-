@@ -18,6 +18,7 @@ typedef enum txVoronoiEventType{
 } txVoronoiEventType;
 
 typedef struct txArc{
+	int             id;
 	txVertex        *pV;
 	txPriorityNode  *circleEvent;
 	txArc(txVertex *pV_, txPriorityNode *circleEvent_):pV(pV_),circleEvent(circleEvent_){};
@@ -52,8 +53,15 @@ struct txPriorityNodeCmp{
 //	return txPriorityNodeCmp()(l,r);
 //}
 
+typedef std::list<txArc> BLList;
+typedef BLList::iterator BLIt;
+typedef std::list<txPriorityNode> PQList;
+typedef PQList::iterator PQIt;
+
+
 class txVoronoiBuilder
 {
+
 public:
 	txVoronoiBuilder(int numOfSites);
 	~txVoronoiBuilder(void);
@@ -71,15 +79,17 @@ private:
 	static void Bisector(const txVertex &v0, const txVertex &v1, txEdge &edge);
 	static void Circle(const txVertex &n0, const txVertex &n1, const txVertex &n2, double &y);
 	//bool GetTripleAsLeft();
+	void InserteArc(const txArc &arc);
+	BLIt GetArcIterator(const txArc &arc);
+
 
 private:
-	txMesh *mesh;
-	std::vector<txVertex>     sitesList;
-	//std::priority_queue<txPriorityNode, std::vector<txPriorityNode>, txPriorityNodeCmp> eventQueue;
-	std::list<txPriorityNode> eventQueue;
-	std::list<txEdge> edgeList;
-	std::map<int, txArc>     beachLine;
-	typedef std::map<int, txArc>::iterator BeachIt;
-	typedef std::list<txPriorityNode>::iterator PQIt;
+	txMesh                               *mesh;
+	std::vector<txVertex>                sitesList;
+	std::list<txPriorityNode>            eventQueue;
+	std::list<txEdge>                    edgeList;
+	std::list<txArc>                     beachLine;
+	int                                  arcCount;
+
 };
 
