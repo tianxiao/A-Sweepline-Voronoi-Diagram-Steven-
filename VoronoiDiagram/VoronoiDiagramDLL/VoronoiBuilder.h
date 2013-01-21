@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <list>
 #include <map>
+#include "import.h"
 #include "halfedgeprimitive.h"
 
 #define PRECISION_INFINIT -1e20
@@ -102,7 +103,7 @@ typedef PQList::iterator PQIt;
 typedef std::list<txBreakPoint> BPList;
 
 
-class txVoronoiBuilder
+class R_DECLDIR txVoronoiBuilder
 {
 
 public:
@@ -113,15 +114,18 @@ public:
 
 	void Build();
 
+public:
+	static void Bisector(const txVertex &v0, const txVertex &v1, txEdge &edge);
+	static void Circle(const txVertex &n0, const txVertex &n1, const txVertex &n2, double &y);
+	static void CalculateTwoParabolaIntersectionPoints(const txVertex &p0, const txVertex &p1, double ly0, double ly1, txVertex &v0, txVertex &v1, txParabolaIntersectionType &type);
+
+
 private:
 	void InitialEventQueue();
 	void HandleSiteEvent(const txPriorityNode &siteEvent);
 	void HandleCircleEvent(const txPriorityNode &cirlceEvent);
 	void DeleteFalseAlarmCircleEvent(int circleId);
 	void InsertEvent(const txPriorityNode &pevent);
-	static void Bisector(const txVertex &v0, const txVertex &v1, txEdge &edge);
-	static void Circle(const txVertex &n0, const txVertex &n1, const txVertex &n2, double &y);
-	static void CalculateTwoParabolaIntersectionPoints(const txVertex &p0, const txVertex &p1, double ly0, double ly1, txVertex &v0, txVertex &v1, txParabolaIntersectionType &type);
 	bool GetTripleAsLeft(BLIt middle, BLIt &l, BLIt &ll);
 	bool GetTripleAsMiddle(BLIt middle, BLIt &l, BLIt &r);
 	bool GetTripleAsRight(BLIt middle, BLIt &r, BLIt &rr);

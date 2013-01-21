@@ -53,57 +53,41 @@ void txVoronoiBuilder::InitialEventQueue(){
 void txVoronoiBuilder::HandleSiteEvent(const txPriorityNode &siteEvent){
 	double siteX = siteEvent.pV->x;
 	
-	UpdateBreakPointsList(siteX);
-	txArc newArc(siteEvent.pV);
-	newArc.leftValue = siteEvent.pV->x;
-	newArc.id = arcCount++;
+	UpdateBreakPointsList(siteEvent.pV->y);
+
 	// InsertArc will rtn a newArc's iterator
-	if ( beachLine.size() == 0 ) { beachLine.push_back(newArc); return; }
-	InserteArc(newArc);
-	BLIt newArcIt = GetArcIterator(newArc);
-	BLIt upperBIt = newArcIt;
-	upperBIt++; // upper upper x >= self x
-
-	// Insert new edge
-	txEdge edge;
-	edge.pLSite = siteEvent.pV;
-	if ( upperBIt !=  beachLine.end() ) {
-		edge.pRSite = upperBIt->pV;
-	}
-	edge.id = edgeCount++;
-
-	// Assign the edge id to the arc 
-	newArcIt->edgeId = edgeCount;
-	if ( beachLine.size() ==1 ) return;
-	// check corresponding circle event see if it is false alarm
-	if ( upperBIt != beachLine.end() ) {
-		if ( !upperBIt->PQId ) {
-			DeleteFalseAlarmCircleEvent(upperBIt->PQId);
-		}
+	if ( beachLine.size() == 0 ) { 
+		txArc newArc(siteEvent.pV);
+		newArc.leftValue = PRECISION_INFINIT;
+		newArc.id = arcCount++;
+		beachLine.push_back(newArc); 
+		return;
 	}
 
-	BLIt l, ll;
-	if ( GetTripleAsLeft(newArcIt, l, ll) ) {
-		// check cirlce event
-		printf("l-ll\n");
-	}
-	BLIt r, rr;
-	if ( GetTripleAsRight(newArcIt, r, rr) ) {
-		// check circle event
-		printf("r-rr\n");
-	}
-	BLIt ml, mr;
-	if ( GetTripleAsMiddle(newArcIt, ml, mr) ) {
-		// check circle event
-		printf("middle\n");
-		printf("%d-%d-%d\n",ml->pV->x, newArcIt->pV->x, mr->pV->x);
-		double bottomY;
-		Circle(*newArcIt->pV, *ml->pV, *mr->pV,bottomY);
-		txPriorityNode circleEvent(NULL,CIRCLE_EVENT);
-		circleEvent.id = eventCount++;
-		circleEvent.circleBottomY = bottomY;
-		InsertEvent(circleEvent);
-	}
+	InsertNewArc(siteEvent);
+
+	//BLIt l, ll;
+	//if ( GetTripleAsLeft(newArcIt, l, ll) ) {
+	//	// check cirlce event
+	//	printf("l-ll\n");
+	//}
+	//BLIt r, rr;
+	//if ( GetTripleAsRight(newArcIt, r, rr) ) {
+	//	// check circle event
+	//	printf("r-rr\n");
+	//}
+	//BLIt ml, mr;
+	//if ( GetTripleAsMiddle(newArcIt, ml, mr) ) {
+	//	// check circle event
+	//	printf("middle\n");
+	//	printf("%d-%d-%d\n",ml->pV->x, newArcIt->pV->x, mr->pV->x);
+	//	double bottomY;
+	//	Circle(*newArcIt->pV, *ml->pV, *mr->pV,bottomY);
+	//	txPriorityNode circleEvent(NULL,CIRCLE_EVENT);
+	//	circleEvent.id = eventCount++;
+	//	circleEvent.circleBottomY = bottomY;
+	//	InsertEvent(circleEvent);
+	//}
 
 }
 
@@ -120,6 +104,7 @@ void txVoronoiBuilder::DeleteFalseAlarmCircleEvent(int circleId){
 		if (eraseIt->id == circleId) break;
 		eraseIt++;
 	}
+	if ( eraseIt == eventQueue.end() ) return;
 	eventQueue.erase(eraseIt);
 }
 
@@ -265,9 +250,9 @@ void txVoronoiBuilder::CalculateTwoParabolaIntersectionPoints(const txVertex &p0
 	assert(abs(ly1-y2)>PRESISION_OF_PARABOLA_INTERSECTION);
 	a1 = 0.5/(y1-ly0);
 	a2 = 0.5/(y2-ly1);
-	a = a1 + a2;
-	b = -2*(a1*x1 + a2*x2);
-	c = (a1*x1*x1 + a2*x2*x2 + y1 + y2);
+	a = a1 - a2;
+	b = -2*(a1*x1 - a2*x2);
+	c = (a1*x1*x1 - a2*x2*x2 + 0.5*(y1-y2) );
 
 	double delta = b*b - 4*a*c;
 	assert (delta>0);
@@ -280,9 +265,9 @@ void txVoronoiBuilder::CalculateTwoParabolaIntersectionPoints(const txVertex &p0
 	} else {
 		double sqrtdelta = sqrt(delta);
 		v0.x = 0.5*(-b+sqrtdelta)/a;
-		v0.y = a1*(v0.x-x1)*(v0.x-x1) + y1;
-		v1.x = 0.5*(b+sqrtdelta)/1;
-		v1.y = a2*(v1.x-x2)*(v1.x-x2) + y2;
+		v0.y = a1*(v0.x-x1)*(v0.x-x1) + 0.5*(y1+ly0);
+		v1.x = 0.5*(-b-sqrtdelta)/a;
+		v1.y = a1*(v1.x-x1)*(v1.x-x1) + 0.5*(y1+ly0);
 		type = PARABOLA_INTECT_TWO;
 		if ( v0.x>v1.x ) {
 			std::swap(v0, v1);
@@ -296,12 +281,17 @@ void txVoronoiBuilder::InsertEdge(const txEdge &edge){
 }
 
 int txVoronoiBuilder::GetUpperArcId(double x){
+	int rtn = -1;
 	for (BLIt it=beachLine.begin(); it!=beachLine.end(); it++) {
 		if ( x < it->leftValue ) {
-			return it->id;
+			rtn = it->id;
+			break;
 		}
 	}
-	return -1;
+	if ( -1 == rtn ) {
+		rtn = beachLine.back().id;
+	}
+	return rtn;
 }
 
 // doesn't like the InserteArc function 
@@ -313,6 +303,7 @@ void txVoronoiBuilder::InsertNewArc(const txPriorityNode &siteEvent) {
 	double siteX = siteEvent.pV->x;
 	int upperArcId = GetUpperArcId(siteX);
 	BLIt upperArcIt = GetArcFromId(upperArcId);
+	// check if the upperArc doesn't exists
 	assert(upperArcIt!=beachLine.end());
 	txArc newArc(siteEvent.pV);
 	newArc.leftValue = siteX;
@@ -320,11 +311,20 @@ void txVoronoiBuilder::InsertNewArc(const txPriorityNode &siteEvent) {
 
 	txArc leftArc(upperArcIt->pV);
 	leftArc.leftValue = upperArcIt->leftValue;
-	newArc.id = arcCount++;
+	leftArc.id = arcCount++;
 
 	txArc rightArc(upperArcIt->pV);
 	rightArc.leftValue = siteX;
 	rightArc.id = arcCount++;
+
+	// Insert new edge
+	txEdge edge;
+	edge.pLSite = upperArcIt->pV;
+	edge.pRSite = siteEvent.pV;
+	edge.id = edgeCount++;
+
+	// Assign the edge id to the arc 
+	newArc.edgeId = edge.id;
 
 	BLList tempList;
 	tempList.push_back(leftArc);
@@ -339,6 +339,7 @@ void txVoronoiBuilder::InsertNewArc(const txPriorityNode &siteEvent) {
 	DeleteFalseAlarmCircleEvent(upperArcIt->PQId);
 
 	beachLine.erase(upperArcIt);
+
 
 }
 

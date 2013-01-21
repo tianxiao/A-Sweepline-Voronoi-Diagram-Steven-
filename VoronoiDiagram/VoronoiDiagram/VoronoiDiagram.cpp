@@ -2,7 +2,8 @@
 //
 
 #include "stdafx.h"
-#include "VoronoiBuilder.h"
+//#include "VoronoiBuilder.h"
+#include "../VoronoiDiagramDLL/VoronoiBuilder.h"
 
 
 int _tmain(int argc, _TCHAR* argv[])

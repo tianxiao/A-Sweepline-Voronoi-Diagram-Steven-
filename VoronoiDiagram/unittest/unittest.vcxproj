@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{6F0B33DE-9D4E-44BB-AACC-16F7586170C0}</ProjectGuid>
+    <ProjectGuid>{B6C7C2AF-8CA4-476C-8D41-2D216D836FFE}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>VoronoiDiagram</RootNamespace>
+    <RootNamespace>unittest</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -49,10 +49,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>..\thirdparty\gtest-1.6.0\libs\debug\gtestd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -69,6 +71,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>..\thirdparty\gtest-1.6.0\libs\release\gtest.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -79,13 +82,18 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="matrix3_u.cpp" />
+    <ClCompile Include="parabola_intersection_u.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="VoronoiDiagram.cpp" />
+    <ClCompile Include="unittest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\RealisticRayTracingDLL\RealisticRayTracingDLL.vcxproj">
+      <Project>{29e44c0c-0fec-43b1-945c-74bbc3378b21}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\VoronoiDiagramDLL\VoronoiDiagramDLL.vcxproj">
       <Project>{1be3fd6f-996c-4d25-822b-0b8ffe9f8c53}</Project>
     </ProjectReference>
