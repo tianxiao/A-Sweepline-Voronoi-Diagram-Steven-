@@ -11,7 +11,7 @@ typedef struct txFace{
 } txFace;
 
 typedef struct txVertex{
-	int x, y;
+	double x, y;
 } txVertex;
 
 typedef struct txHalfEdge{
@@ -22,12 +22,6 @@ typedef struct txHalfEdge{
 	txHalfEdge       *PPre;	            // The pre Half [Optional]
 } txHalfEdge;
 
-typedef struct txEdge{
-	txVertex   *pLSite;
-	txVertex   *pRSite;
-	txVertex   *pS;
-	txVertex   *pE;    // This edge is the bisector of pLSite & pRSite
-	double a,b,c;
-} txEdge;
+
 
 #endif // __HALFEDGEPRIMITIVE_HEADERFILE__
