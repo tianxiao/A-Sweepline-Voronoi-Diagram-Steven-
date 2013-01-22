@@ -66,6 +66,8 @@ void txVoronoiBuilder::HandleSiteEvent(const txPriorityNode &siteEvent){
 
 	InsertNewArc(siteEvent);
 
+	// Check if have circle event
+
 	//BLIt l, ll;
 	//if ( GetTripleAsLeft(newArcIt, l, ll) ) {
 	//	// check cirlce event
@@ -231,6 +233,7 @@ void txVoronoiBuilder::UpdateBreakPointsList(double bottomY){
 			blit->leftValue = v0.x;
 			next->leftValue = v1.x;
 			blit++;blit++; // skip the next arc cause we have already calculated the next one in this step
+			               // be more care full to the ++!!!
 		} else {
 			// let the left arc intersect with the middle pick the maximum value
 			blit->leftValue = v1.x;
@@ -280,11 +283,16 @@ void txVoronoiBuilder::InsertEdge(const txEdge &edge){
 	edgeList.push_back(edge);
 }
 
+// Since the left mose arc value is always the -INFINITE 
+// so it is safe for rtnIt--;
 int txVoronoiBuilder::GetUpperArcId(double x){
 	int rtn = -1;
+	BLIt rtnIt;
 	for (BLIt it=beachLine.begin(); it!=beachLine.end(); it++) {
 		if ( x < it->leftValue ) {
-			rtn = it->id;
+			rtnIt = it;
+			rtnIt--;
+			rtn = rtnIt->id;
 			break;
 		}
 	}

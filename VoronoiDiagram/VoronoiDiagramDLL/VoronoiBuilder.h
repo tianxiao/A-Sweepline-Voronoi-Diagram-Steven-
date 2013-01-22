@@ -9,6 +9,9 @@
 
 #define PRECISION_INFINIT -1e20
 
+#pragma warning(push)
+#pragma warning(disable:4251)
+
 class txMesh;
 struct txPriorityNode;
 struct txEdge;
@@ -149,4 +152,6 @@ private:
 	int                                  edgeCount;
 	BPList                               bpList;
 };
+
+#pragma warning(pop)
 
