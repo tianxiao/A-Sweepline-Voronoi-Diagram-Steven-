@@ -4,6 +4,8 @@
 #include <assert.h>
 #include <math.h>
 #include "mesh.h"
+#include "Vec2.h"
+#include "Matrix2.h"
 
 #define PRESISION_OF_BISECTOR 1e-7
 #define PRESISION_OF_LINEPARALELL_DETERMIN 1e-7
@@ -46,6 +48,7 @@ void txVoronoiBuilder::InitialEventQueue(){
 	for (size_t i=0; i<sitesList.size(); i++){
 		txPriorityNode newEvent(&sitesList[i],SITE_EVENT);
 		newEvent.id = eventCount++;
+		newEvent.circleBottomY = newEvent.pV->y;
 		InsertEvent(newEvent);
 	}
 }
@@ -64,9 +67,10 @@ void txVoronoiBuilder::HandleSiteEvent(const txPriorityNode &siteEvent){
 		return;
 	}
 
-	InsertNewArc(siteEvent);
+	int newArcId = InsertNewArc(siteEvent);
 
 	// Check if have circle event
+	CheckCircleEvent(newArcId);
 
 	//BLIt l, ll;
 	//if ( GetTripleAsLeft(newArcIt, l, ll) ) {
@@ -117,7 +121,7 @@ void txVoronoiBuilder::InsertEvent(const txPriorityNode &pevent){
 	}
 	PQIt insert = eventQueue.begin();
 	while (insert!=eventQueue.end()) {
-		if (pevent.pV->y>insert->pV->y) break;
+		if (pevent.circleBottomY>insert->circleBottomY) break;
 		insert++;
 	}
 	std::list<txPriorityNode> insertlist;
@@ -128,8 +132,10 @@ void txVoronoiBuilder::InsertEvent(const txPriorityNode &pevent){
 void txVoronoiBuilder::Bisector(const txVertex &v0, const txVertex &v1, txEdge &edge){
 	double detv01 = (v0.x-v1.x)*(v0.x-v1.x)+(v0.y-v1.y)*(v0.y-v1.y);
 	assert(abs(detv01)>PRESISION_OF_BISECTOR);  // check if identical at precision 
-	edge.a = v0.y-v1.y;
-	edge.b = -(v0.x-v1.x);
+	double nx = v0.x-v1.x;
+	double ny = v0.y-v1.y;
+	edge.a = nx;
+	edge.b = ny;
 	edge.c = -(edge.a*(v0.x+v1.x)*0.5 + edge.b*(v0.y+v1.y)*0.5);
 }
 
@@ -138,12 +144,14 @@ void txVoronoiBuilder::Circle(const txVertex &n0, const txVertex &n1, const txVe
 	txEdge e1;
 	Bisector(n0,n1,e0);
 	Bisector(n1,n2,e1);
+
+	txVec2 v(-e0.c, -e1.c);
+	txMatrix2 m(e0.a, e0.b, e1.a, e1.b);
+	txVec2 resultv = m.Solve(v);
 	// PRESISION_OF_LINEPARALELL_DETERMIN
-	double det = e0.a*e1.b-e0.b*e1.a;
-	assert(abs(det)>PRESISION_OF_LINEPARALELL_DETERMIN); // Need return a false 3 points planar
-	double centerX = -e0.c/det;
-	double centerY = -e1.c/det;
-	double radius = sqrt((n0.x-centerX)*(n0.x-centerX)+(n1.y-centerY)*(n1.y-centerY));
+	double centerX = resultv.X();
+	double centerY = resultv.Y();
+	double radius = sqrt( (n0.x-centerX)*(n0.x-centerX)+(n0.y-centerY)*(n0.y-centerY) );
 
 	y = centerY - radius;
 }
@@ -307,7 +315,7 @@ int txVoronoiBuilder::GetUpperArcId(double x){
 // 1)insert the degenerate parabola ( vertical line )
 // 2)delete the upper arc and 
 // 3)create two new arc based on the delete arc
-void txVoronoiBuilder::InsertNewArc(const txPriorityNode &siteEvent) {
+int txVoronoiBuilder::InsertNewArc(const txPriorityNode &siteEvent) {
 	double siteX = siteEvent.pV->x;
 	int upperArcId = GetUpperArcId(siteX);
 	BLIt upperArcIt = GetArcFromId(upperArcId);
@@ -347,7 +355,8 @@ void txVoronoiBuilder::InsertNewArc(const txPriorityNode &siteEvent) {
 	DeleteFalseAlarmCircleEvent(upperArcIt->PQId);
 
 	beachLine.erase(upperArcIt);
-
+	
+	return newArc.id;
 
 }
 
@@ -358,3 +367,65 @@ BLIt txVoronoiBuilder::GetArcFromId(int id) {
 
 	return beachLine.end();
 }
+
+// input the newly insert arc id
+// check if the ll l id
+// check if the id r rr
+// have a circle event and insert to the priority queue
+void txVoronoiBuilder::CheckCircleEvent(int newArcId) {
+	BLIt newArcIt = GetArcFromId(newArcId);
+	BLIt l,ll,r,rr;
+	l=newArcIt;
+	ll=newArcIt;
+	r=newArcIt;
+	rr=newArcIt;
+	if ( l != beachLine.begin() ) {
+		l--;
+		ll = l;
+		if ( l != beachLine.begin() ) {
+			ll--;
+			// check the left tripple
+			AddCircleEvent(ll, l, newArcIt);
+		}
+	}
+
+	if ( r++ != beachLine.end() ) {
+		rr = r;
+		if ( rr++ != beachLine.end() ) {
+			if ( rr != beachLine.end() ) {
+				// check the right tripple 
+				AddCircleEvent(newArcIt, r, rr);
+			}
+		}
+	}
+	
+}
+
+
+void txVoronoiBuilder::AddCircleEvent(BLIt lIt, BLIt mIt, BLIt rIt) {
+	// First check if the three arc ( the VD site ) truely compose a
+	// circle event, I just omit it 
+	bool isCircle = true;
+	double bottomY;
+	Circle(*lIt->pV, *mIt->pV, *rIt->pV, bottomY);
+
+	txPriorityNode circleEvent(NULL,CIRCLE_EVENT);
+	circleEvent.id = eventCount++;
+	circleEvent.circleBottomY = bottomY;
+
+	// assign the circle event id to the triple
+	lIt->PQId = circleEvent.id;
+	mIt->PQId = circleEvent.id;
+	rIt->PQId = circleEvent.id;
+
+	// assign the triple to the circle event
+	// this is used to delete the middle arc
+	// and identify the idential triples
+	circleEvent.aLId = lIt->id;
+	circleEvent.aMId = mIt->id;
+	circleEvent.aRId = rIt->id;
+
+	InsertEvent(circleEvent);
+}
+
+

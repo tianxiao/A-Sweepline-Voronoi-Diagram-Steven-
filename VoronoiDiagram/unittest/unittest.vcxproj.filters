@@ -38,5 +38,11 @@
     <ClCompile Include="parabola_intersection_u.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="matrix2_u.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bisector_u.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

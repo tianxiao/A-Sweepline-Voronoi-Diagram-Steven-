@@ -36,6 +36,12 @@
     <ClInclude Include="mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Matrix2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vec2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -51,6 +57,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Vec2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

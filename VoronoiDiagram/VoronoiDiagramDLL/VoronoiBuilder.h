@@ -70,9 +70,9 @@ typedef struct txPriorityNode{
 	int                  id;
 	txVertex             *pV;  // point to the site
 	txVoronoiEventType   eventType;
-	txArc                *al;
-	txArc                *am; // The middle arc will disappear when circle event happened
-	txArc                *ar;
+	int                  aLId;
+	int                  aMId; // The middle arc will disappear when circle event happened
+	int                  aRId;
 	double               circleBottomY;
 	txPriorityNode(txVertex *pV_, txVoronoiEventType eventType_)
 		:pV(pV_)
@@ -137,8 +137,10 @@ private:
 	void UpdateBreakPointsList(double bottomY);
 	void InsertEdge(const txEdge &edge);
 	int GetUpperArcId(double x);
-	void InsertNewArc(const txPriorityNode &siteEvent);
+	int InsertNewArc(const txPriorityNode &siteEvent);
 	BLIt GetArcFromId(int id);
+	void CheckCircleEvent(int newArcId);
+	void AddCircleEvent(BLIt lIt, BLIt mIt, BLIt rIt);
 
 
 private:
