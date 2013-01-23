@@ -25,5 +25,6 @@ TEST(txVoronoiBuilder, Circle) {
 	double bottomY;
 
 	txVoronoiBuilder::Circle(n0, n1, n2, bottomY);
-	EXPECT_TRUE(abs(bottomY-(1.9-2.1023796041628637))<CIRCLE_CENTERPOINT_PRECISION);
+	// 1.9-2.1023796041628637 = -0.20237960416286382
+	EXPECT_TRUE(abs(bottomY-(-0.20237960416286382))<CIRCLE_CENTERPOINT_PRECISION);
 }

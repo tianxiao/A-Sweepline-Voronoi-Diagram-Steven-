@@ -26,6 +26,12 @@ typedef struct txBreakPoint{
 	txVertex   v;
 } txBreakPoint;
 
+typedef enum PointOrientationType{
+	P_ORIENTATION_LEFT,
+	P_ORIENTATION_RIGHT,
+	P_COLLINEAR
+} PointOrientationType;
+
 // The prabola intersection will need to
 // consider the parameter ranges
 // Here I only consider the reference line is parallel 
@@ -73,6 +79,7 @@ typedef struct txPriorityNode{
 	int                  aLId;
 	int                  aMId; // The middle arc will disappear when circle event happened
 	int                  aRId;
+	txVertex             center;
 	double               circleBottomY;
 	txPriorityNode(txVertex *pV_, txVoronoiEventType eventType_)
 		:pV(pV_)
@@ -121,13 +128,14 @@ public:
 	static void Bisector(const txVertex &v0, const txVertex &v1, txEdge &edge);
 	static void Circle(const txVertex &n0, const txVertex &n1, const txVertex &n2, double &y);
 	static void CalculateTwoParabolaIntersectionPoints(const txVertex &p0, const txVertex &p1, double ly0, double ly1, txVertex &v0, txVertex &v1, txParabolaIntersectionType &type);
+	static PointOrientationType PointOrientationChecking(const txVertex &v0, const txVertex &v1, const txVertex &v2);
 
 
 private:
 	void InitialEventQueue();
 	void HandleSiteEvent(const txPriorityNode &siteEvent);
 	void HandleCircleEvent(const txPriorityNode &cirlceEvent);
-	void DeleteFalseAlarmCircleEvent(int circleId);
+	void DeleteCircleEvent(int circleId);
 	void InsertEvent(const txPriorityNode &pevent);
 	bool GetTripleAsLeft(BLIt middle, BLIt &l, BLIt &ll);
 	bool GetTripleAsMiddle(BLIt middle, BLIt &l, BLIt &r);
@@ -141,6 +149,9 @@ private:
 	BLIt GetArcFromId(int id);
 	void CheckCircleEvent(int newArcId);
 	void AddCircleEvent(BLIt lIt, BLIt mIt, BLIt rIt);
+	void RemoveCircleEventFromArc(int arcId);
+	void DeleteArc( int arcId );
+	// bool IsExistCircleEvent
 
 
 private:

@@ -78,6 +78,7 @@
     <ClInclude Include="halfedgeprimitive.h" />
     <ClInclude Include="import.h" />
     <ClInclude Include="Matrix2.h" />
+    <ClInclude Include="Matrix3.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -94,6 +95,7 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Matrix2.cpp" />
+    <ClCompile Include="Matrix3.cpp" />
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -44,5 +44,8 @@
     <ClCompile Include="bisector_u.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="point_orientation_u.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

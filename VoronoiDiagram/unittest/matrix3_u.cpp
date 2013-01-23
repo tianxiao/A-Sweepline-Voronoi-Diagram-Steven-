@@ -1,6 +1,19 @@
 #include "stdafx.h"
 #include <math.h>
 #include "../thirdparty/gtest-1.6.0/include/gtest.h"
+#include "../VoronoiDiagramDLL/Matrix3.h"
+
+#define MATRIX3_DETERMINANT_PRECISION 1e-20
+
+TEST(txMatrix3, Determinant) {
+
+	txMatrix3 m(0, 2, 2, 0, 0, 2, 1, 1, 1);
+	EXPECT_TRUE(abs(m.Determinant() - 4)<MATRIX3_DETERMINANT_PRECISION);
+
+	txMatrix3 m2(1, 2, 3, 4, 5, 6, 7, 8, 9);
+	EXPECT_TRUE(abs(m2.Determinant() - 0 ) < MATRIX3_DETERMINANT_PRECISION);
+}
+
 //#include "../RealisticRayTracingDLL/Matrix3.h"
 //
 //TEST(Matrix3, SolveLinear3){

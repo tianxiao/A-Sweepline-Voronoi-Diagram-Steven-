@@ -1,0 +1,1 @@
+plot 'p0--0.2.txt' u 1:2 w l, 'p1--0.2.txt' u 1:2 w l, 'p2--0.2.txt' u 1:2 w l 

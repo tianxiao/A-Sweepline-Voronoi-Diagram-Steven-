@@ -6,6 +6,7 @@
 #include "mesh.h"
 #include "Vec2.h"
 #include "Matrix2.h"
+#include "Matrix3.h"
 
 #define PRESISION_OF_BISECTOR 1e-7
 #define PRESISION_OF_LINEPARALELL_DETERMIN 1e-7
@@ -72,45 +73,36 @@ void txVoronoiBuilder::HandleSiteEvent(const txPriorityNode &siteEvent){
 	// Check if have circle event
 	CheckCircleEvent(newArcId);
 
-	//BLIt l, ll;
-	//if ( GetTripleAsLeft(newArcIt, l, ll) ) {
-	//	// check cirlce event
-	//	printf("l-ll\n");
-	//}
-	//BLIt r, rr;
-	//if ( GetTripleAsRight(newArcIt, r, rr) ) {
-	//	// check circle event
-	//	printf("r-rr\n");
-	//}
-	//BLIt ml, mr;
-	//if ( GetTripleAsMiddle(newArcIt, ml, mr) ) {
-	//	// check circle event
-	//	printf("middle\n");
-	//	printf("%d-%d-%d\n",ml->pV->x, newArcIt->pV->x, mr->pV->x);
-	//	double bottomY;
-	//	Circle(*newArcIt->pV, *ml->pV, *mr->pV,bottomY);
-	//	txPriorityNode circleEvent(NULL,CIRCLE_EVENT);
-	//	circleEvent.id = eventCount++;
-	//	circleEvent.circleBottomY = bottomY;
-	//	InsertEvent(circleEvent);
-	//}
-
 }
 
-void txVoronoiBuilder::HandleCircleEvent(const txPriorityNode &cirlceEvent){
+void txVoronoiBuilder::HandleCircleEvent(const txPriorityNode &circleEvent){
+	// clear this circle event or Finalized this event
+	int aLId = circleEvent.aLId;
+	int aMId = circleEvent.aMId;
+	int aRId = circleEvent.aRId;
+
+	DeleteArc(aMId);
+	RemoveCircleEventFromArc(aLId);
+	RemoveCircleEventFromArc(aRId);
+	// add the new edge from this vertex
 
 }
 
 // When the arc related circel event be delete
 // Anything else we must do ?
 // This question leave to the handl circle event.
-void txVoronoiBuilder::DeleteFalseAlarmCircleEvent(int circleId){
+void txVoronoiBuilder::DeleteCircleEvent(int circleId){
 	PQIt eraseIt = eventQueue.begin();
 	while (eraseIt!=eventQueue.end()) {
 		if (eraseIt->id == circleId) break;
 		eraseIt++;
 	}
-	if ( eraseIt == eventQueue.end() ) return;
+	if ( eraseIt == eventQueue.end() ) { 
+		// If this assert being trigged the insert circle event is wrong
+		// And may this utility function be wrong called!
+		assert(true);
+		return ;
+	}
 	eventQueue.erase(eraseIt);
 }
 
@@ -224,6 +216,14 @@ bool txVoronoiBuilder::GetTripleAsRight(BLIt middle, BLIt &r, BLIt &rr){
 // new site event wont change the arc topology
 // Only the Circle event will.
 // guess what the arc will not be 2! so check 2 is unecessary!
+
+// buggies!!!
+// The following update code is detected to have 2 faults
+// The first the when the blit is the back of list,
+// the next == end() which will cause a dereference failure.
+// The second the update break point is not right. 
+// Does it have a methods that use the edge (trace point or called breakpoint interchangely)
+// to Update these leftvalues?
 void txVoronoiBuilder::UpdateBreakPointsList(double bottomY){
 	BLIt blit = beachLine.begin();
 	if ( blit == beachLine.end() ) return;
@@ -241,7 +241,7 @@ void txVoronoiBuilder::UpdateBreakPointsList(double bottomY){
 			blit->leftValue = v0.x;
 			next->leftValue = v1.x;
 			blit++;blit++; // skip the next arc cause we have already calculated the next one in this step
-			               // be more care full to the ++!!!
+			               // be more carefull to the ++!!!
 		} else {
 			// let the left arc intersect with the middle pick the maximum value
 			blit->leftValue = v1.x;
@@ -352,7 +352,7 @@ int txVoronoiBuilder::InsertNewArc(const txPriorityNode &siteEvent) {
 	// Befor erase the upper arc we should check to see if it contains the circle event
 	// And this may contain one circle events, It may contain more than one circle event
 	// If it contain the circle event then this event is false alarm circle event
-	DeleteFalseAlarmCircleEvent(upperArcIt->PQId);
+	DeleteCircleEvent(upperArcIt->PQId);
 
 	beachLine.erase(upperArcIt);
 	
@@ -407,25 +407,70 @@ void txVoronoiBuilder::AddCircleEvent(BLIt lIt, BLIt mIt, BLIt rIt) {
 	// circle event, I just omit it 
 	bool isCircle = true;
 	double bottomY;
-	Circle(*lIt->pV, *mIt->pV, *rIt->pV, bottomY);
+	//bool isConverge = true;
+	if ( PointOrientationChecking(*lIt->pV, *mIt->pV, *rIt->pV) == P_ORIENTATION_RIGHT ) {
+		Circle(*lIt->pV, *mIt->pV, *rIt->pV, bottomY);
 
-	txPriorityNode circleEvent(NULL,CIRCLE_EVENT);
-	circleEvent.id = eventCount++;
-	circleEvent.circleBottomY = bottomY;
+		txPriorityNode circleEvent(NULL,CIRCLE_EVENT);
+		circleEvent.id = eventCount++;
+		circleEvent.circleBottomY = bottomY;
 
-	// assign the circle event id to the triple
-	lIt->PQId = circleEvent.id;
-	mIt->PQId = circleEvent.id;
-	rIt->PQId = circleEvent.id;
+		// assign the circle event id to the triple
+		lIt->PQId = circleEvent.id;
+		mIt->PQId = circleEvent.id;
+		rIt->PQId = circleEvent.id;
 
-	// assign the triple to the circle event
-	// this is used to delete the middle arc
-	// and identify the idential triples
-	circleEvent.aLId = lIt->id;
-	circleEvent.aMId = mIt->id;
-	circleEvent.aRId = rIt->id;
+		// assign the triple to the circle event
+		// this is used to delete the middle arc
+		// and identify the idential triples
+		circleEvent.aLId = lIt->id;
+		circleEvent.aMId = mIt->id;
+		circleEvent.aRId = rIt->id;
 
-	InsertEvent(circleEvent);
+		InsertEvent(circleEvent);
+
+	}
 }
 
+
+// Circle event converge checking 
+// check this the following tutorial in the doc
+// http://www-ma2.upc.es/~geoc/indexEN.html#Dibuixador
+//  +Orientation tests
+// Point line Orientation http://www.cs.cmu.edu/~quake/robust.html
+// Not Always right!
+PointOrientationType txVoronoiBuilder::PointOrientationChecking(const txVertex &v0, const txVertex &v1, const txVertex &v2) {
+	txMatrix3 m(v0.x, v1.x, v2.x, v0.y, v1.y, v2.y, 1, 1, 1);
+	double det = m.Determinant();
+
+	if ( det > 0 ) {
+		return P_ORIENTATION_LEFT;
+	} else if ( det < 0 ) {
+		return P_ORIENTATION_RIGHT;
+	} else {
+		return P_COLLINEAR;
+	}
+}
+
+
+void txVoronoiBuilder::RemoveCircleEventFromArc(int arcId) {
+	BLIt arcIt = GetArcFromId(arcId);
+	arcIt->PQId = -1;
+}
+
+
+void txVoronoiBuilder::DeleteArc( int arcId ) {
+	BLIt eraseIt = beachLine.end();
+	for ( BLIt it = beachLine.begin(); it != beachLine.end(); it++ ) {
+		if ( arcId == it->id ) {
+			eraseIt = it;
+		}
+	}
+	if ( eraseIt != beachLine.end() ) {
+		beachLine.erase(eraseIt);
+	} else {
+		assert(true);
+		return;
+	}
+}
 
